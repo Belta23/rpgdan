@@ -140,7 +140,7 @@
       <div class="players">
 
         <form method="get" action="player.php">
-          <input type="hidden" name="id" value="vidar">
+          <input type="hidden" name="id" value="1">
           <button class="icon-btn">
             <div class="icon">☀️</div>
             Vidar
@@ -148,7 +148,7 @@
         </form>
 
         <form method="get" action="player.php">
-          <input type="hidden" name="id" value="orin">
+          <input type="hidden" name="id" value="4">
           <button class="icon-btn">
             <div class="icon">🐐</div>
             Orin
@@ -156,7 +156,7 @@
         </form>
 
         <form method="get" action="player.php">
-          <input type="hidden" name="id" value="floki">
+          <input type="hidden" name="id" value="3">
           <button class="icon-btn">
             <div class="icon">🪓</div>
             Floki
@@ -164,7 +164,7 @@
         </form>
 
         <form method="get" action="player.php">
-          <input type="hidden" name="id" value="lanling">
+          <input type="hidden" name="id" value="2">
           <button class="icon-btn">
             <div class="icon">💰</div>
             Lan Ling
