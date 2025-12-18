@@ -112,27 +112,18 @@
       </div>
     </div>
 
-    <!-- NPCs (com senha) -->
     <div id="step-npcs" class="hidden">
-      <p>Área restrita. Insira a senha do mestre:</p>
-      <form method="post">
-        <input type="password" name="npc_password" placeholder="Senha" />
-        <br><br>
-        <button type="submit">Acessar NPCs</button>
-      </form>
 
-      <?php
-        /*
-         * AQUI VOCÊ IMPLEMENTA:
-         * - Verificação da senha
-         * - Consulta ao banco de dados (NPCs)
-         * - Exibição dos NPCs
-         *
-         * Exemplo (não implementado):
-         * if ($_POST['npc_password'] === 'SENHA_DO_MESTRE') { ... }
-         */
-      ?>
-    </div>
+  <p>Área restrita. Insira suas credenciais:</p>
+  <!--login mestre -->
+  <form method="post" action="admin/login.php">
+    <input type="text" name="usuario" placeholder="Usuário" required />
+    <br><br>
+    <input type="password" name="senha" placeholder="Senha" required />
+    <br><br>
+    <button type="submit">Acessar NPCs</button>
+  </form>
+</div>
 
     <!-- Players -->
     <div id="step-players" class="hidden">

@@ -1,18 +1,27 @@
-<?php require_once 'auth.php'; ?>
+<?php
+session_start();
+
+if (!isset($_SESSION['usuario'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
 
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Admin • Crônicas da Mesa</title>
+<title>Painel NPCs</title>
 </head>
 <body>
 
-<h1>Bem-vindo, <?= htmlspecialchars($_SESSION['usuario']) ?></h1>
+<h1>Área Administrativa – NPCs</h1>
+
+<p>Bem-vindo, <?= htmlspecialchars($_SESSION['usuario']) ?></p>
 
 <ul>
-    <li><a href="personagens_listar.php">Gerenciar Personagens / NPCs</a></li>
-    <li><a href="logout.php">Sair</a></li>
+  <li><a href="npcs.php">Gerenciar NPCs</a></li>
+  <li><a href="logout.php">Sair</a></li>
 </ul>
 
 </body>
