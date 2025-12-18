@@ -1,6 +1,6 @@
 <?php
 // ================================
-// DEBUG (remova em produção)
+// DEBUG (pode remover depois)
 // ================================
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -12,20 +12,20 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/env.php';
 
 // ================================
-// VALIDAÇÃO DA URL
+// VALIDAÇÃO DO ID
 // ================================
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    die('Personagem não informado.');
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die('ID do personagem inválido.');
 }
 
-// Normaliza o termo recebido
-$id = $_GET['id'];
-$nomeBusca = strtolower($id);
-$nomeBusca = str_replace('-', ' ', $nomeBusca);
-$nomeBusca = trim($nomeBusca);
+$id = (int) $_GET['id'];
+
+if ($id <= 0) {
+    die('ID do personagem inválido.');
+}
 
 // ================================
-// CONEXÃO PDO
+// CONEXÃO COM O BANCO
 // ================================
 try {
     $pdo = new PDO(
@@ -38,23 +38,16 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die('Erro de conexão com o banco.');
+    die('Erro ao conectar no banco.');
 }
 
 // ================================
-// BUSCA DO PERSONAGEM
+// BUSCA POR ID (SEM SLUG, SEM LIKE)
 // ================================
-$sql = "
-    SELECT *
-    FROM personagens_rpg
-    WHERE LOWER(nome) LIKE :nome
-    LIMIT 1
-";
-
+$sql = "SELECT * FROM personagens_rpg WHERE id = :id LIMIT 1";
 $stmt = $pdo->prepare($sql);
-$stmt->execute([
-    ':nome' => '%' . $nomeBusca . '%'
-]);
+$stmt->bindValue(':id', $id, PDO::PARAM_INT);
+$stmt->execute();
 
 $personagem = $stmt->fetch();
 
@@ -73,35 +66,22 @@ if (!$personagem) {
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-:root {
-    --bg-dark: #0f0f14;
-    --bg-card: #1a1a24;
-    --gold: #d4af37;
-    --text: #e6e6eb;
-    --muted: #9aa0a6;
-}
-
 body {
     margin: 0;
-    background: radial-gradient(circle at top, #1c1c28, var(--bg-dark));
-    color: var(--text);
+    background: #0f0f14;
+    color: #e6e6eb;
     font-family: 'Inter', sans-serif;
 }
 
 header {
     text-align: center;
-    padding: 2.5rem 1rem;
+    padding: 2rem 1rem;
 }
 
 header h1 {
     font-family: 'Cinzel', serif;
-    font-size: 2.2rem;
-    color: var(--gold);
+    color: #d4af37;
     margin: 0;
-}
-
-header span {
-    color: var(--muted);
 }
 
 .container {
@@ -111,21 +91,21 @@ header span {
 }
 
 .card {
-    background: var(--bg-card);
-    border-radius: 14px;
+    background: #1a1a24;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
 .card h2 {
     font-family: 'Cinzel', serif;
-    color: var(--gold);
+    color: #d4af37;
     margin-top: 0;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
 }
 
@@ -138,15 +118,7 @@ header span {
 
 .stat strong {
     display: block;
-    color: var(--gold);
-    font-size: 1.1rem;
-}
-
-footer {
-    text-align: center;
-    padding: 2rem;
-    color: var(--muted);
-    font-size: 0.85rem;
+    color: #d4af37;
 }
 </style>
 </head>
@@ -155,7 +127,7 @@ footer {
 
 <header>
     <h1><?= htmlspecialchars($personagem['nome']) ?></h1>
-    <span><?= htmlspecialchars($personagem['origem']) ?> • Nível <?= (int)$personagem['nivel'] ?></span>
+    <p><?= htmlspecialchars($personagem['origem']) ?> • Nível <?= (int)$personagem['nivel'] ?></p>
 </header>
 
 <div class="container">
@@ -188,10 +160,6 @@ footer {
 </div>
 
 </div>
-
-<footer>
-    Crônicas da Mesa • RPG
-</footer>
 
 </body>
 </html>
