@@ -47,6 +47,7 @@ a:hover {
 <hr>
 
 <a href="personagens.php">🧙 Gerenciar Personagens (Players & NPCs)</a><br>
+<a href="../index.php">🌍 Voltar ao site</a>
 <a href="logout.php">🚪 Sair</a>
 
 </body>

@@ -116,7 +116,7 @@
 
   <p>Área restrita. Insira suas credenciais:</p>
   <!--login mestre -->
-  <form method="post" action="admin/login.php">
+  <form method="post" action="admin/index.php">
     <input type="text" name="usuario" placeholder="Usuário" required />
     <br><br>
     <input type="password" name="senha" placeholder="Senha" required />
