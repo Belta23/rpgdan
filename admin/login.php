@@ -56,6 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input type="password" name="senha" placeholder="Senha" required><br><br>
     <button type="submit">Entrar</button>
 </form>
-
+<a href="../index.php">🌍 Voltar ao site</a>i>
 </body>
 </html>
