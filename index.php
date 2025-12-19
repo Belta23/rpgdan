@@ -159,7 +159,7 @@ error_reporting(E_ALL);
     <div class="card">
       <h2>🗺️ Mundo & Reinos</h2>
       <p>Mapas, cidades, facções e conflitos políticos que dão vida ao cenário da campanha.</p>
-      <a href="maps.php">Conhecer o mundo</a>
+      <a href="maps/index.php">Conhecer o mundo</a>
     </div>
 
     <div class="card">
