@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../env.php';
+require_once __DIR__ . '/env_admin.php';
 
 if (!isset($_SESSION['usuario'])) {
     header('Location: login.php');
