@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* Previne seleção de texto ao arrastar */
+            user-select: none;
         }
 
         body {
@@ -28,7 +28,7 @@
             overflow: auto;
             cursor: grab;
             position: relative;
-            -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
         .map-container:active {
@@ -38,45 +38,12 @@
         /* Imagem do mapa */
         .map-image {
             display: block;
-            min-width: 100%;
-            min-height: 100%;
-            max-width: none; /* Permite que a imagem exceda o contêiner */
-            /* Centralizar inicialmente */
-            position: relative;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s ease-out;
-        }
-
-        /* Sobreposições (bandeiras, etc.) */
-        .map-overlay {
+            /* A imagem terá seu tamanho original, mas podemos ajustar o zoom por transform ou width/height */
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Permite clicar através da overlay */
-            z-index: 2;
-        }
-
-        /* Bandeira dos Nords como exemplo */
-        .nord-flag {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background-image: url('nords.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            pointer-events: auto; /* Permite clicar na bandeira */
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-            transition: transform 0.2s;
-            z-index: 3;
-        }
-
-        .nord-flag:hover {
-            transform: translate(-50%, -50%) scale(1.1);
+            transform-origin: 0 0; /* Para zoom a partir do canto superior esquerdo */
+            transition: transform 0.1s ease-out;
         }
 
         /* Indicador de arrastar */
@@ -175,44 +142,17 @@
                 padding: 8px 16px;
             }
         }
-
-        /* Estilo para scrollbar (opcional) */
-        .map-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .map-container::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .map-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
     </style>
 </head>
 <body>
     <!-- Contêiner principal do mapa -->
     <div class="map-container" id="mapContainer">
-        <!-- Imagem do mapa (substitua pelo seu caminho correto) -->
+        <!-- Imagem do mapa -->
         <img src="origial/mapa_calradia.png"
              class="map-image"
              alt="Mapa de Calradia"
              id="mainMap"
              draggable="false">
-        
-        <!-- Overlay para elementos interativos -->
-        <div class="map-overlay" id="mapOverlay">
-            <!-- Exemplo: Bandeira dos Nords -->
-            <!-- Posicione essas divs usando JavaScript ou coordenadas fixas -->
-            <div class="nord-flag" style="top: 30%; left: 40%;" 
-                 title="Reino dos Nords" 
-                 onclick="alert('Reino dos Nords selecionado!')">
-            </div>
-            
-            <!-- Adicione mais bandeiras/frações aqui -->
-        </div>
     </div>
 
     <!-- Indicador para arrastar -->
@@ -244,65 +184,104 @@
         let scale = 1;
         let isDragging = false;
         let startX, startY, scrollLeft, scrollTop;
-        let autoScrollInterval = null;
 
         // Configurações
         const MIN_SCALE = 0.5;
         const MAX_SCALE = 3;
         const SCALE_STEP = 0.2;
 
-        // Centralizar o mapa ao carregar
-        window.addEventListener('load', () => {
-            centerMap();
+        // Tamanho original da imagem (vamos obter quando carregar)
+        let imgOriginalWidth = 0;
+        let imgOriginalHeight = 0;
+
+        // Quando a imagem carregar, configurar o tamanho original e centralizar
+        mapImage.onload = function() {
+            imgOriginalWidth = mapImage.naturalWidth;
+            imgOriginalHeight = mapImage.naturalHeight;
+            
+            // Inicialmente, ajustar a imagem para caber na tela (scale apropriado)
+            fitToScreen();
+            updateZoomDisplay();
             
             // Remover hint após 5 segundos
             setTimeout(() => {
                 dragHint.style.display = 'none';
             }, 5000);
-        });
+        };
 
-        // ===== FUNÇÕES DE CONTROLE =====
-        
-        function centerMap() {
-            // Centraliza a imagem no contêiner
-            mapContainer.scrollLeft = (mapImage.width - mapContainer.clientWidth) / 2;
-            mapContainer.scrollTop = (mapImage.height - mapContainer.clientHeight) / 2;
-            updateZoomDisplay();
+        // Ajustar a imagem para caber na tela (fit to screen)
+        function fitToScreen() {
+            const containerWidth = mapContainer.clientWidth;
+            const containerHeight = mapContainer.clientHeight;
+            
+            // Calcular a escala para caber na tela (fit)
+            const scaleX = containerWidth / imgOriginalWidth;
+            const scaleY = containerHeight / imgOriginalHeight;
+            scale = Math.min(scaleX, scaleY);
+            
+            // Aplicar a escala
+            applyScale();
+            
+            // Centralizar
+            centerMap();
         }
 
+        // Aplicar a escala atual à imagem
+        function applyScale() {
+            mapImage.style.width = (imgOriginalWidth * scale) + 'px';
+            mapImage.style.height = (imgOriginalHeight * scale) + 'px';
+        }
+
+        // Centralizar o mapa
+        function centerMap() {
+            const containerWidth = mapContainer.clientWidth;
+            const containerHeight = mapContainer.clientHeight;
+            const imageWidth = imgOriginalWidth * scale;
+            const imageHeight = imgOriginalHeight * scale;
+            
+            mapContainer.scrollLeft = (imageWidth - containerWidth) / 2;
+            mapContainer.scrollTop = (imageHeight - containerHeight) / 2;
+        }
+
+        // Resetar o zoom para caber na tela
         function resetMap() {
-            scale = 1;
-            mapImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
-            centerMap();
+            fitToScreen();
         }
 
         function zoomIn() {
             if (scale < MAX_SCALE) {
-                scale += SCALE_STEP;
-                applyZoom();
+                // Aumentar o zoom mantendo o centro da tela
+                zoomAtCenter(SCALE_STEP);
             }
         }
 
         function zoomOut() {
             if (scale > MIN_SCALE) {
-                scale -= SCALE_STEP;
-                applyZoom();
+                // Diminuir o zoom mantendo o centro da tela
+                zoomAtCenter(-SCALE_STEP);
             }
         }
 
-        function applyZoom() {
-            // Salva a posição atual do scroll
-            const scrollCenterX = mapContainer.scrollLeft + mapContainer.clientWidth / 2;
-            const scrollCenterY = mapContainer.scrollTop + mapContainer.clientHeight / 2;
+        // Zoom mantendo o centro da tela
+        function zoomAtCenter(step) {
+            const containerWidth = mapContainer.clientWidth;
+            const containerHeight = mapContainer.clientHeight;
             
-            // Aplica o zoom
-            mapImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            // Posição do centro relativa à imagem antes do zoom
+            const centerX = mapContainer.scrollLeft + containerWidth / 2;
+            const centerY = mapContainer.scrollTop + containerHeight / 2;
             
-            // Ajusta o scroll para manter o foco no mesmo ponto
-            setTimeout(() => {
-                mapContainer.scrollLeft = scrollCenterX - mapContainer.clientWidth / 2;
-                mapContainer.scrollTop = scrollCenterY - mapContainer.clientHeight / 2;
-            }, 10);
+            // Aplicar o novo zoom
+            scale += step;
+            scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+            applyScale();
+            
+            // Ajustar a posição do scroll para manter o centro
+            const newCenterX = centerX * (1 + step / scale); // Aproximação
+            const newCenterY = centerY * (1 + step / scale);
+            
+            mapContainer.scrollLeft = newCenterX - containerWidth / 2;
+            mapContainer.scrollTop = newCenterY - containerHeight / 2;
             
             updateZoomDisplay();
         }
@@ -328,7 +307,7 @@
             e.preventDefault();
             const x = e.pageX - mapContainer.offsetLeft;
             const y = e.pageY - mapContainer.offsetTop;
-            const walkX = (x - startX) * 2; // Velocidade do arraste
+            const walkX = (x - startX) * 2;
             const walkY = (y - startY) * 2;
             
             mapContainer.scrollLeft = scrollLeft - walkX;
@@ -343,7 +322,6 @@
         // ===== CONTROLE DE TOUCH (MOBILE) =====
         
         let touchStartX, touchStartY, touchScrollLeft, touchScrollTop;
-        let lastTouchTime = 0;
 
         mapContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
@@ -353,18 +331,6 @@
                 touchScrollLeft = mapContainer.scrollLeft;
                 touchScrollTop = mapContainer.scrollTop;
                 mapContainer.style.cursor = 'grabbing';
-                
-                // Detecta double tap para zoom
-                const currentTime = new Date().getTime();
-                if (currentTime - lastTouchTime < 300) {
-                    // Double tap detected
-                    if (scale < MAX_SCALE) {
-                        zoomIn();
-                    } else {
-                        resetMap();
-                    }
-                }
-                lastTouchTime = currentTime;
             }
         }, { passive: true });
 
@@ -384,42 +350,42 @@
         mapContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             
-            if (e.ctrlKey) { // Ctrl + Scroll = zoom
+            if (e.ctrlKey) {
                 const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
                 const newScale = scale * zoomFactor;
                 
                 if (newScale >= MIN_SCALE && newScale <= MAX_SCALE) {
-                    scale = newScale;
-                    applyZoom();
+                    // Zoom no ponto do mouse
+                    zoomAtPoint(e.deltaY > 0 ? -SCALE_STEP : SCALE_STEP, e.clientX, e.clientY);
                 }
             } else {
-                // Scroll normal para navegação
+                // Scroll normal
                 mapContainer.scrollLeft += e.deltaY;
                 mapContainer.scrollTop += e.deltaY;
             }
         }, { passive: false });
 
-        // ===== AUTO-SCROLL NAS BORDAS (OPCIONAL) =====
-        
-        function startAutoScroll(directionX, directionY) {
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
+        // Função para zoom em um ponto específico (mouse)
+        function zoomAtPoint(step, clientX, clientY) {
+            const containerRect = mapContainer.getBoundingClientRect();
+            const x = clientX - containerRect.left;
+            const y = clientY - containerRect.top;
             
-            autoScrollInterval = setInterval(() => {
-                mapContainer.scrollLeft += directionX * 20;
-                mapContainer.scrollTop += directionY * 20;
-            }, 16); // ~60fps
+            // Posição relativa ao contêiner
+            const relX = x + mapContainer.scrollLeft;
+            const relY = y + mapContainer.scrollTop;
+            
+            // Novo scale
+            scale += step;
+            scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+            applyScale();
+            
+            // Ajustar o scroll para manter o ponto sob o mouse
+            mapContainer.scrollLeft = relX * (scale / (scale - step)) - x;
+            mapContainer.scrollTop = relY * (scale / (scale - step)) - y;
+            
+            updateZoomDisplay();
         }
-
-        function stopAutoScroll() {
-            if (autoScrollInterval) {
-                clearInterval(autoScrollInterval);
-                autoScrollInterval = null;
-            }
-        }
-
-        // Inicializar
-        centerMap();
-        mapContainer.style.cursor = 'grab';
 
         // Atalhos de teclado
         document.addEventListener('keydown', (e) => {
@@ -440,9 +406,13 @@
             }
         });
 
-        // Log de informações úteis (remova em produção)
-        console.log('Mapa de Calradia carregado!');
-        console.log('Dica: Use mouse para arrastar, scroll para navegar, Ctrl+scroll para zoom');
+        // Redimensionar a janela
+        window.addEventListener('resize', () => {
+            // Se estiver com zoom mínimo (fit to screen), reajustar ao redimensionar
+            if (scale <= MIN_SCALE + 0.01) { // Considerando margem de erro
+                fitToScreen();
+            }
+        });
     </script>
 </body>
 </html>
