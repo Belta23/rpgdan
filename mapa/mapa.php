@@ -148,7 +148,7 @@
     <!-- Contêiner principal do mapa -->
     <div class="map-container" id="mapContainer">
         <!-- Imagem do mapa -->
-        <img src="nords.png"
+        <img src="nords.jpeg"
              class="map-image"
              alt="Mapa de Calradia"
              id="mainMap"
